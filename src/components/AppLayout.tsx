@@ -69,20 +69,15 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
         <div className="flex items-center gap-4">
           <h1 className="font-display text-[22px] md:text-[24px] font-semibold">{title}</h1>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="text-on-surface-variant hover:text-primary">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <div className="hidden sm:flex flex-col items-end">
-            <span className="text-[13px] font-semibold">{user?.name}</span>
-            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant">
-              {user?.role}
-            </span>
-          </div>
-          <div className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold border border-outline-variant">
-            {user?.name.slice(0, 1)}
-          </div>
-        </div>
+        <ProfileMenu
+          name={user?.name ?? ""}
+          email={user?.email ?? ""}
+          role={user?.role ?? ""}
+          onLogout={() => {
+            actions.logout();
+            navigate({ to: "/login" });
+          }}
+        />
       </header>
 
       <main className="md:ml-[240px] pt-[64px] pb-24 md:pb-8 min-h-screen">
