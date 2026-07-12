@@ -104,13 +104,13 @@ function TripsPage() {
                 </select>
               </F>
               <F label="Cargo Weight (kg)">
-                <input className="input" type="number" value={form.cargoWeight} onChange={(e) => setForm({ ...form, cargoWeight: +e.target.value })} required />
+                <input className="input" type="number" min="0" step="1" value={form.cargoWeight} onChange={(e) => setForm({ ...form, cargoWeight: Math.max(0, Math.floor(+e.target.value) || 0) })} required />
               </F>
               <F label="Distance (km)">
-                <input className="input" type="number" value={form.distance} onChange={(e) => setForm({ ...form, distance: +e.target.value })} required />
+                <input className="input" type="number" min="0" step="0.1" value={form.distance} onChange={(e) => setForm({ ...form, distance: Math.max(0, +e.target.value || 0) })} required />
               </F>
               <F label="Estimated Revenue ($)">
-                <input className="input" type="number" value={form.revenue} onChange={(e) => setForm({ ...form, revenue: +e.target.value })} />
+                <input className="input" type="number" min="0" step="0.01" value={form.revenue} onChange={(e) => setForm({ ...form, revenue: Math.max(0, +e.target.value || 0) })} />
               </F>
             </div>
 
