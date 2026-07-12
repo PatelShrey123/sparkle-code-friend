@@ -76,7 +76,7 @@ function MaintenancePage() {
                     </select>
                   </F>
                   <F label="Cost (USD)">
-                    <input className="input" type="number" value={form.cost} onChange={(e) => setForm({ ...form, cost: +e.target.value })} required />
+                    <input className="input" type="number" min="0" step="0.01" value={form.cost} onChange={(e) => setForm({ ...form, cost: Math.max(0, +e.target.value || 0) })} required />
                   </F>
                   <F label="Date">
                     <input className="input" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />

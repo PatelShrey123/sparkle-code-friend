@@ -239,8 +239,12 @@ function VehicleModal({
               <input
                 required
                 type="number"
+                min="0"
+                step="1"
                 value={form.capacity}
-                onChange={(e) => setForm({ ...form, capacity: +e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, capacity: Math.max(0, Math.floor(+e.target.value) || 0) })
+                }
                 className="input"
               />
             </Field>
@@ -248,8 +252,12 @@ function VehicleModal({
               <input
                 required
                 type="number"
+                min="0"
+                step="1"
                 value={form.odometer}
-                onChange={(e) => setForm({ ...form, odometer: +e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, odometer: Math.max(0, Math.floor(+e.target.value) || 0) })
+                }
                 className="input"
               />
             </Field>
@@ -257,8 +265,10 @@ function VehicleModal({
               <input
                 required
                 type="number"
+                min="0"
+                step="0.01"
                 value={form.cost}
-                onChange={(e) => setForm({ ...form, cost: +e.target.value })}
+                onChange={(e) => setForm({ ...form, cost: Math.max(0, +e.target.value || 0) })}
                 className="input"
               />
             </Field>

@@ -70,10 +70,10 @@ function FuelPage() {
                 </select>
               </F>
               <F label="Liters">
-                <input className="input" type="number" step="0.1" value={fuelForm.liters} onChange={(e) => setFuelForm({ ...fuelForm, liters: +e.target.value })} required />
+                <input className="input" type="number" min="0" step="0.1" value={fuelForm.liters} onChange={(e) => setFuelForm({ ...fuelForm, liters: Math.max(0, +e.target.value || 0) })} required />
               </F>
               <F label="Cost ($)">
-                <input className="input" type="number" step="0.01" value={fuelForm.cost} onChange={(e) => setFuelForm({ ...fuelForm, cost: +e.target.value })} required />
+                <input className="input" type="number" min="0" step="0.01" value={fuelForm.cost} onChange={(e) => setFuelForm({ ...fuelForm, cost: Math.max(0, +e.target.value || 0) })} required />
               </F>
               <F label="Station">
                 <input className="input" value={fuelForm.station} onChange={(e) => setFuelForm({ ...fuelForm, station: e.target.value })} />
@@ -141,7 +141,7 @@ function FuelPage() {
                 </select>
               </F>
               <F label="Amount ($)">
-                <input className="input" type="number" step="0.01" value={expForm.amount} onChange={(e) => setExpForm({ ...expForm, amount: +e.target.value })} required />
+                <input className="input" type="number" min="0" step="0.01" value={expForm.amount} onChange={(e) => setExpForm({ ...expForm, amount: Math.max(0, +e.target.value || 0) })} required />
               </F>
               <F label="Description">
                 <input className="input" value={expForm.description} onChange={(e) => setExpForm({ ...expForm, description: e.target.value })} required />
