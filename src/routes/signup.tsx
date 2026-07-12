@@ -16,6 +16,7 @@ function SignupPage() {
     password: "",
     terms: false,
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   return (
