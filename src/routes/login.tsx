@@ -26,12 +26,7 @@ function LoginPage() {
       <main className="relative z-10 w-full max-w-[440px] flex flex-col gap-8">
         <header className="flex flex-col items-center text-center">
           <div className="mb-4 flex items-center justify-center w-16 h-16 rounded-lg bg-primary-container/10 border border-primary-container/20">
-            <span
-              className="material-symbols-outlined text-primary text-4xl"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              local_shipping
-            </span>
+            <Logo size={44} />
           </div>
           <h1 className="font-display text-[32px] font-black tracking-tight">TransitOps</h1>
           <p className="text-on-surface-variant mt-2 uppercase tracking-widest text-[10px] font-bold">
