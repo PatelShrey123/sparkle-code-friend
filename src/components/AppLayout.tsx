@@ -1,6 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useDB, actions } from "@/lib/store";
+import { Logo } from "@/components/Logo";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
@@ -29,10 +30,7 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
     <div className="min-h-screen bg-background text-on-surface">
       <aside className="hidden md:flex flex-col fixed left-0 top-0 w-[240px] h-full bg-surface-container-low border-r border-outline-variant z-30">
         <div className="px-6 py-6 flex items-center gap-2 border-b border-outline-variant">
-          <span className="material-symbols-outlined text-primary-container text-[28px]">
-            local_shipping
-          </span>
-          <span className="font-display text-[22px] font-black tracking-tighter">TransitOps</span>
+          <Logo size={32} showWordmark />
         </div>
         <nav className="flex-1 py-4 space-y-1">
           {nav.map((n) => {
