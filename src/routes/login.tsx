@@ -11,6 +11,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("admin@transitops.com");
   const [password, setPassword] = useState("admin123");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
