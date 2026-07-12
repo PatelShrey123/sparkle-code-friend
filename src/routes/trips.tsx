@@ -21,8 +21,7 @@ function TripsPage() {
   const eligibleDrivers = useMemo(
     () =>
       drivers.filter(
-        (d) =>
-          d.status === "Available" && d.status !== "Suspended" && new Date(d.licenseExpiry) > today,
+        (d) => d.status === "Available" && new Date(d.licenseExpiry) > today,
       ),
     [drivers, today],
   );
