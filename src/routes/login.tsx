@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { actions } from "@/lib/store";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Sign in — TransitOps" }] }),

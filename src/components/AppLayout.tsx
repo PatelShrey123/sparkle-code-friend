@@ -105,6 +105,86 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
   );
 }
 
+function ProfileMenu({
+  name,
+  email,
+  role,
+  onLogout,
+}: {
+  name: string;
+  email: string;
+  role: string;
+  onLogout: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div className="flex items-center gap-4" ref={ref}>
+      <button className="text-on-surface-variant hover:text-primary" aria-label="Notifications">
+        <span className="material-symbols-outlined">notifications</span>
+      </button>
+      <div className="hidden sm:flex flex-col items-end">
+        <span className="text-[13px] font-semibold">{name}</span>
+        <span className="text-[10px] uppercase tracking-widest text-on-surface-variant">
+          {role}
+        </span>
+      </div>
+      <div className="relative">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold border border-outline-variant hover:brightness-110 transition"
+          aria-label="Open profile"
+        >
+          {name.slice(0, 1).toUpperCase()}
+        </button>
+        {open && (
+          <div className="absolute right-0 mt-2 w-72 bg-surface-container border border-outline-variant rounded-lg shadow-2xl z-50 overflow-hidden">
+            <div className="p-4 flex items-center gap-3 border-b border-outline-variant">
+              <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
+                {name.slice(0, 1).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold truncate">{name}</p>
+                <p className="text-xs text-on-surface-variant truncate">{email}</p>
+              </div>
+            </div>
+            <div className="p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-on-surface-variant text-[11px] uppercase tracking-wider">Role</span>
+                <span className="font-semibold">{role}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-on-surface-variant text-[11px] uppercase tracking-wider">Status</span>
+                <span className="text-green-400 font-semibold">Active</span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setOpen(false);
+                onLogout();
+              }}
+              className="w-full text-left px-4 py-3 border-t border-outline-variant text-sm hover:bg-surface-container-high flex items-center gap-2 text-error"
+            >
+              <span className="material-symbols-outlined text-[18px]">logout</span>
+              Sign out
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function StatusPill({
   status,
 }: {
