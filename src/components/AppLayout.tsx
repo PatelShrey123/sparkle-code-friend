@@ -1,6 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useDB, actions } from "@/lib/store";
+import { Logo } from "@/components/Logo";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
@@ -29,10 +30,7 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
     <div className="min-h-screen bg-background text-on-surface">
       <aside className="hidden md:flex flex-col fixed left-0 top-0 w-[240px] h-full bg-surface-container-low border-r border-outline-variant z-30">
         <div className="px-6 py-6 flex items-center gap-2 border-b border-outline-variant">
-          <span className="material-symbols-outlined text-primary-container text-[28px]">
-            local_shipping
-          </span>
-          <span className="font-display text-[22px] font-black tracking-tighter">TransitOps</span>
+          <Logo size={32} showWordmark />
         </div>
         <nav className="flex-1 py-4 space-y-1">
           {nav.map((n) => {
@@ -71,20 +69,15 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
         <div className="flex items-center gap-4">
           <h1 className="font-display text-[22px] md:text-[24px] font-semibold">{title}</h1>
         </div>
-        <div className="flex items-center gap-4">
-          <button className="text-on-surface-variant hover:text-primary">
-            <span className="material-symbols-outlined">notifications</span>
-          </button>
-          <div className="hidden sm:flex flex-col items-end">
-            <span className="text-[13px] font-semibold">{user?.name}</span>
-            <span className="text-[10px] uppercase tracking-widest text-on-surface-variant">
-              {user?.role}
-            </span>
-          </div>
-          <div className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold border border-outline-variant">
-            {user?.name.slice(0, 1)}
-          </div>
-        </div>
+        <ProfileMenu
+          name={user?.name ?? ""}
+          email={user?.email ?? ""}
+          role={user?.role ?? ""}
+          onLogout={() => {
+            actions.logout();
+            navigate({ to: "/login" });
+          }}
+        />
       </header>
 
       <main className="md:ml-[240px] pt-[64px] pb-24 md:pb-8 min-h-screen">
@@ -108,6 +101,86 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
           );
         })}
       </nav>
+    </div>
+  );
+}
+
+function ProfileMenu({
+  name,
+  email,
+  role,
+  onLogout,
+}: {
+  name: string;
+  email: string;
+  role: string;
+  onLogout: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div className="flex items-center gap-4" ref={ref}>
+      <button className="text-on-surface-variant hover:text-primary" aria-label="Notifications">
+        <span className="material-symbols-outlined">notifications</span>
+      </button>
+      <div className="hidden sm:flex flex-col items-end">
+        <span className="text-[13px] font-semibold">{name}</span>
+        <span className="text-[10px] uppercase tracking-widest text-on-surface-variant">
+          {role}
+        </span>
+      </div>
+      <div className="relative">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="w-9 h-9 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold border border-outline-variant hover:brightness-110 transition"
+          aria-label="Open profile"
+        >
+          {name.slice(0, 1).toUpperCase()}
+        </button>
+        {open && (
+          <div className="absolute right-0 mt-2 w-72 bg-surface-container border border-outline-variant rounded-lg shadow-2xl z-50 overflow-hidden">
+            <div className="p-4 flex items-center gap-3 border-b border-outline-variant">
+              <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
+                {name.slice(0, 1).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold truncate">{name}</p>
+                <p className="text-xs text-on-surface-variant truncate">{email}</p>
+              </div>
+            </div>
+            <div className="p-4 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-on-surface-variant text-[11px] uppercase tracking-wider">Role</span>
+                <span className="font-semibold">{role}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-on-surface-variant text-[11px] uppercase tracking-wider">Status</span>
+                <span className="text-green-400 font-semibold">Active</span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setOpen(false);
+                onLogout();
+              }}
+              className="w-full text-left px-4 py-3 border-t border-outline-variant text-sm hover:bg-surface-container-high flex items-center gap-2 text-error"
+            >
+              <span className="material-symbols-outlined text-[18px]">logout</span>
+              Sign out
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

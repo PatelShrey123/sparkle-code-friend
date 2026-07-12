@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { actions, type Role } from "@/lib/store";
+import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Create account — TransitOps" }] }),
@@ -30,10 +31,7 @@ function SignupPage() {
         <div className="hidden md:flex md:w-5/12 bg-surface-container-low p-10 flex-col justify-between relative overflow-hidden border-r border-outline-variant">
           <div className="relative z-20">
             <div className="flex items-center gap-2 mb-8">
-              <span className="material-symbols-outlined text-primary-container text-[32px]">
-                local_shipping
-              </span>
-              <h1 className="font-display text-[32px] font-black tracking-tighter">TransitOps</h1>
+              <Logo size={36} showWordmark />
             </div>
             <div className="space-y-6">
               <h2 className="font-display text-[24px] font-semibold text-primary leading-tight">
