@@ -11,6 +11,7 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("admin@transitops.com");
   const [password, setPassword] = useState("admin123");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -71,13 +72,25 @@ function LoginPage() {
                 <label className="text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                   Password
                 </label>
-                <input
-                  className="w-full h-10 px-3 border border-outline-variant rounded font-mono"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <input
+                    className="w-full h-10 pl-3 pr-10 border border-outline-variant rounded font-mono"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">
+                      {showPassword ? "visibility_off" : "visibility"}
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
 

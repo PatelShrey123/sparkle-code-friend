@@ -86,68 +86,55 @@ interface DB {
   expenses: Expense[];
 }
 
-const KEY = "transitops.db.v1";
+const KEY = "transitops.db.v2";
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 function seed(): DB {
-  const vehicles: Vehicle[] = [
-    { id: uid(), registration: "TX-9942", name: "VAN-05", type: "Sprinter Van", capacity: 1200, odometer: 48210, cost: 42000, status: "Available" },
-    { id: uid(), registration: "HD-2201", name: "TRUCK-11", type: "Heavy Duty", capacity: 12500, odometer: 128400, cost: 98000, status: "On Trip" },
-    { id: uid(), registration: "MN-4491", name: "VAN-22", type: "Transit", capacity: 2800, odometer: 62110, cost: 38000, status: "In Shop" },
-    { id: uid(), registration: "OL-1102", name: "TRUCK-02", type: "Legacy", capacity: 12000, odometer: 412000, cost: 24000, status: "Retired" },
-    { id: uid(), registration: "BT-5521", name: "VAN-09", type: "Electric", capacity: 2500, odometer: 12800, cost: 61000, status: "Available" },
-  ];
-  const drivers: Driver[] = [
-    { id: uid(), name: "Alex Johnson", license: "TX-8829-LMV", category: "LMV", licenseExpiry: "2027-05-14", contact: "+1 555 0110", safetyScore: 4.9, status: "Available" },
-    { id: uid(), name: "Priya Sharma", license: "MH-4012-HMV", category: "HMV", licenseExpiry: "2026-11-02", contact: "+91 98 7654 3210", safetyScore: 4.7, status: "On Trip" },
-    { id: uid(), name: "Marcus Reed", license: "NY-5561-HMV", category: "HMV", licenseExpiry: "2025-09-30", contact: "+1 555 0142", safetyScore: 4.2, status: "Off Duty" },
-    { id: uid(), name: "Elena Vance", license: "CA-1109-LMV", category: "LMV", licenseExpiry: "2024-03-01", contact: "+1 555 0180", safetyScore: 2.8, status: "Suspended" },
-  ];
   return {
     users: [
-      { id: uid(), name: "Raven K.", email: "admin@transitops.com", password: "admin123", role: "Fleet Manager" },
+      {
+        id: "admin-seed",
+        name: "Admin",
+        email: "admin@transitops.com",
+        password: "admin123",
+        role: "Fleet Manager",
+      },
     ],
     session: null,
-    vehicles,
-    drivers,
+    vehicles: [],
+    drivers: [],
     trips: [],
-    maintenance: [
-      { id: uid(), vehicleId: vehicles[2].id, type: "Full Brake Set", cost: 1240, date: "2024-10-18", status: "Active" },
-    ],
-    fuel: [
-      { id: uid(), vehicleId: vehicles[0].id, liters: 450, cost: 812.45, date: "2024-10-24", station: "Shell S2" },
-      { id: uid(), vehicleId: vehicles[1].id, liters: 320.5, cost: 578.1, date: "2024-10-23", station: "BP Logistics" },
-    ],
-    expenses: [
-      { id: uid(), category: "Tolls", amount: 45, description: "M50 Motorway Pass", date: "2024-10-22" },
-      { id: uid(), category: "Misc", amount: 120, description: "Loading Dock Fee", date: "2024-10-21" },
-    ],
+    maintenance: [],
+    fuel: [],
+    expenses: [],
   };
 }
 
-function load(): DB {
-  if (typeof window === "undefined") return seed();
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) {
-      const s = seed();
-      localStorage.setItem(KEY, JSON.stringify(s));
-      return s;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return seed();
-  }
-}
-
-let db: DB = typeof window === "undefined" ? seed() : load();
+let db: DB = seed();
 const listeners = new Set<() => void>();
+let hydrated = false;
+
 function emit() {
   if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify(db));
   listeners.forEach((l) => l());
 }
 function subscribe(cb: () => void) {
+  if (!hydrated && typeof window !== "undefined") {
+    hydrated = true;
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        db = JSON.parse(raw);
+      } else {
+        localStorage.setItem(KEY, JSON.stringify(db));
+      }
+    } catch {
+      // keep seed
+    }
+    // notify after mount
+    queueMicrotask(() => listeners.forEach((l) => l()));
+  }
   listeners.add(cb);
   return () => listeners.delete(cb);
 }

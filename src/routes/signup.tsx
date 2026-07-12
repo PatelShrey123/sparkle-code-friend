@@ -16,6 +16,7 @@ function SignupPage() {
     password: "",
     terms: false,
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   return (
@@ -124,13 +125,24 @@ function SignupPage() {
               <Field label="Password" icon="lock">
                 <input
                   required
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   minLength={6}
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   placeholder="••••••••"
                   className="input"
+                  style={{ paddingRight: 40 }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary z-10"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {showPassword ? "visibility_off" : "visibility"}
+                  </span>
+                </button>
               </Field>
             </div>
             <label className="flex items-start gap-3 py-2 text-sm text-on-surface-variant">
