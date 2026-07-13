@@ -237,7 +237,8 @@ export const actions = {
     if (patch.contact !== undefined) dbPatch.contact = patch.contact;
     if (patch.safetyScore !== undefined) dbPatch.safety_score = patch.safetyScore;
     if (patch.status !== undefined) dbPatch.status = patch.status;
-    const { error } = await supabase.from("drivers").update(dbPatch).eq("id", id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await supabase.from("drivers").update(dbPatch as any).eq("id", id);
     if (error) throw new Error(error.message);
     invalidate(["drivers"]);
   },
