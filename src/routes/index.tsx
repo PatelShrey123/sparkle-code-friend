@@ -1,17 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useDB } from "@/lib/store";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
-  const session = useDB((d) => d.session);
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
-    navigate({ to: session ? "/dashboard" : "/login", replace: true });
-  }, [session, navigate]);
+    if (loading) return;
+    navigate({ to: user ? "/dashboard" : "/login", replace: true });
+  }, [user, loading, navigate]);
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <span className="material-symbols-outlined text-primary text-4xl animate-spin">sync</span>

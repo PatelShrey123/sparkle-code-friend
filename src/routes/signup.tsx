@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { actions, type Role } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/signup")({
@@ -10,15 +10,10 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    role: "Fleet Manager" as Role,
-    password: "",
-    terms: false,
-  });
+  const [form, setForm] = useState({ name: "", email: "", password: "", terms: false });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-on-surface flex items-center justify-center p-4 relative overflow-hidden">
@@ -38,8 +33,17 @@ function SignupPage() {
                 Empowering Fleet Excellence through Precision Data.
               </h2>
               <p className="text-sm text-on-surface-variant max-w-[320px]">
-                Join dispatchers and fleet managers orchestrating global logistics with mission-critical speed.
+                Sign up to request access. An admin will review and assign your role.
               </p>
+              <div className="p-4 border border-primary/20 rounded-lg bg-primary/5">
+                <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-1">
+                  Bootstrap Notice
+                </p>
+                <p className="text-xs text-on-surface-variant">
+                  The <span className="text-primary">first person to sign up</span> automatically
+                  becomes the admin. Everyone else waits for approval.
+                </p>
+              </div>
             </div>
           </div>
           <div
@@ -49,15 +53,6 @@ function SignupPage() {
               backgroundSize: "16px 16px",
             }}
           />
-          <div className="relative z-20 mt-auto">
-            <p className="font-mono text-[11px] text-primary/60 uppercase tracking-[0.2em] leading-tight">
-              TRNS_SYS_CORE.ACTIVE
-              <br />
-              ENCRYPT_RSA_4096.READY
-              <br />
-              VER_0.42.12_STABLE
-            </p>
-          </div>
         </div>
 
         <div className="w-full md:w-7/12 bg-surface p-8 md:p-12">
@@ -68,24 +63,28 @@ function SignupPage() {
 
           <form
             className="space-y-5"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               setError(null);
               if (!form.terms) {
                 setError("Please accept the Terms of Service.");
                 return;
               }
-              try {
-                actions.signup({
-                  name: form.name,
-                  email: form.email,
-                  password: form.password,
-                  role: form.role,
-                });
-                navigate({ to: "/dashboard" });
-              } catch (err) {
-                setError((err as Error).message);
+              setLoading(true);
+              const { error: err } = await supabase.auth.signUp({
+                email: form.email,
+                password: form.password,
+                options: {
+                  data: { name: form.name },
+                  emailRedirectTo: window.location.origin,
+                },
+              });
+              setLoading(false);
+              if (err) {
+                setError(err.message);
+                return;
               }
+              navigate({ to: "/dashboard" });
             }}
           >
             <Field label="Full Name" icon="person">
@@ -107,42 +106,28 @@ function SignupPage() {
                 className="input"
               />
             </Field>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Field label="Role" icon="badge">
-                <select
-                  className="input"
-                  value={form.role}
-                  onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
-                >
-                  <option>Fleet Manager</option>
-                  <option>Dispatcher</option>
-                  <option>Safety Officer</option>
-                  <option>Financial Analyst</option>
-                </select>
-              </Field>
-              <Field label="Password" icon="lock">
-                <input
-                  required
-                  type={showPassword ? "text" : "password"}
-                  minLength={6}
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="input"
-                  style={{ paddingRight: 40 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary z-10"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  <span className="material-symbols-outlined text-[18px]">
-                    {showPassword ? "visibility_off" : "visibility"}
-                  </span>
-                </button>
-              </Field>
-            </div>
+            <Field label="Password" icon="lock">
+              <input
+                required
+                type={showPassword ? "text" : "password"}
+                minLength={6}
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="At least 6 characters"
+                className="input"
+                style={{ paddingRight: 40 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary z-10"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {showPassword ? "visibility_off" : "visibility"}
+                </span>
+              </button>
+            </Field>
             <label className="flex items-start gap-3 py-2 text-sm text-on-surface-variant">
               <input
                 type="checkbox"
@@ -162,9 +147,10 @@ function SignupPage() {
             )}
             <button
               type="submit"
-              className="w-full bg-primary-container text-on-primary-container font-display text-[16px] font-semibold py-4 rounded hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              disabled={loading}
+              className="w-full bg-primary-container text-on-primary-container font-display text-[16px] font-semibold py-4 rounded hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
             >
-              Create Account
+              {loading ? "Creating..." : "Create Account"}
               <span className="material-symbols-outlined">arrow_forward</span>
             </button>
             <p className="text-center text-sm mt-6">

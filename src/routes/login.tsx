@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { actions } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/login")({
@@ -10,8 +10,8 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("admin@transitops.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,18 +37,17 @@ function LoginPage() {
         <section className="bg-surface-container border border-outline-variant p-6 rounded-lg shadow-2xl">
           <form
             className="flex flex-col gap-6"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               setError(null);
               setLoading(true);
-              try {
-                actions.login(email, password);
-                navigate({ to: "/dashboard" });
-              } catch (err) {
-                setError((err as Error).message);
-              } finally {
-                setLoading(false);
+              const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+              setLoading(false);
+              if (err) {
+                setError(err.message);
+                return;
               }
+              navigate({ to: "/dashboard" });
             }}
           >
             <div className="flex flex-col gap-4">
@@ -57,7 +56,7 @@ function LoginPage() {
                   Email
                 </label>
                 <input
-                  className="w-full h-10 px-3 border border-outline-variant rounded font-mono"
+                  className="w-full h-10 px-3 border border-outline-variant rounded font-mono bg-surface-container-lowest"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -70,7 +69,7 @@ function LoginPage() {
                 </label>
                 <div className="relative">
                   <input
-                    className="w-full h-10 pl-3 pr-10 border border-outline-variant rounded font-mono"
+                    className="w-full h-10 pl-3 pr-10 border border-outline-variant rounded font-mono bg-surface-container-lowest"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -116,7 +115,7 @@ function LoginPage() {
 
         <footer className="text-center text-on-surface-variant/60 text-xs">
           <p>© 2026 TransitOps Global Systems.</p>
-          <p className="mt-1 font-mono text-[10px]">Demo credentials pre-filled.</p>
+          <p className="mt-1 font-mono text-[10px]">First account to sign up becomes the admin.</p>
         </footer>
       </main>
     </div>
