@@ -68,7 +68,8 @@ export interface Expense {
 }
 
 // ---------- generic helper ----------
-function useList<T>(table: string, key: string, order: string = "created_at") {
+type AnyTable = Parameters<typeof supabase.from>[0];
+function useList<T>(table: AnyTable, key: string, order: string = "created_at") {
   return useQuery({
     queryKey: [key],
     queryFn: async (): Promise<T[]> => {
