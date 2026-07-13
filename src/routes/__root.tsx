@@ -71,10 +71,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "TransitOps — Smart Transport Operations Platform" },
       {
         property: "og:description",
-        content: "End-to-end transport operations, digitized.",
+        content: "Digitize fleet, driver, dispatch, maintenance and expense management with real-time operational insights.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "TransitOps — Smart Transport Operations Platform" },
+      { name: "twitter:description", content: "Digitize fleet, driver, dispatch, maintenance and expense management with real-time operational insights." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40b5737f-1f1f-4750-8006-32cd17ad7030/id-preview-ed147312--b98816f1-4286-42ee-a843-4583796193ff.lovable.app-1783949906586.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40b5737f-1f1f-4750-8006-32cd17ad7030/id-preview-ed147312--b98816f1-4286-42ee-a843-4583796193ff.lovable.app-1783949906586.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
