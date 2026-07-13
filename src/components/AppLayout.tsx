@@ -2,6 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { useAuth, ROLE_LABEL } from "@/hooks/use-auth";
+import { useBindActions } from "@/lib/store";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
