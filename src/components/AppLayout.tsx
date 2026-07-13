@@ -1,7 +1,8 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useDB, actions } from "@/lib/store";
 import { Logo } from "@/components/Logo";
+import { useAuth, ROLE_LABEL } from "@/hooks/use-auth";
+import { useBindActions } from "@/lib/store";
 
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
@@ -14,17 +15,28 @@ const nav = [
 ];
 
 export function AppLayout({ title, children }: { title: string; children: ReactNode }) {
-  const session = useDB((d) => d.session);
-  const users = useDB((d) => d.users);
-  const user = session ? users.find((u) => u.id === session.userId) : null;
+  useBindActions();
+  const { user, profile, roles, loading, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
-    if (!session) navigate({ to: "/login" });
-  }, [session, navigate]);
+    if (!loading && !user) navigate({ to: "/login" });
+  }, [user, loading, navigate]);
 
-  if (!session) return null;
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <span className="material-symbols-outlined text-primary text-4xl animate-spin">sync</span>
+      </div>
+    );
+  }
+
+  if (profile && profile.status !== "approved") {
+    return <PendingScreen status={profile.status} onSignOut={signOut} />;
+  }
+
+  const roleLabel = roles[0] ? ROLE_LABEL[roles[0]] : "";
 
   return (
     <div className="min-h-screen bg-background text-on-surface">
@@ -32,7 +44,7 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
         <div className="px-6 py-6 flex items-center gap-2 border-b border-outline-variant">
           <Logo size={32} showWordmark />
         </div>
-        <nav className="flex-1 py-4 space-y-1">
+        <nav className="flex-1 py-4 space-y-1 overflow-y-auto">
           {nav.map((n) => {
             const active = pathname.startsWith(n.to);
             return (
@@ -50,11 +62,24 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
               </Link>
             );
           })}
+          {isAdmin && (
+            <Link
+              to="/admin/users"
+              className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                pathname.startsWith("/admin")
+                  ? "text-primary font-bold border-l-4 border-primary bg-surface-container-high"
+                  : "text-on-surface-variant hover:bg-surface-container border-l-4 border-transparent"
+              }`}
+            >
+              <span className="material-symbols-outlined">shield_person</span>
+              <span className="font-display text-[15px] font-semibold">Manage Users</span>
+            </Link>
+          )}
         </nav>
         <div className="p-4 border-t border-outline-variant">
           <button
-            onClick={() => {
-              actions.logout();
+            onClick={async () => {
+              await signOut();
               navigate({ to: "/login" });
             }}
             className="flex items-center gap-2 text-on-surface-variant hover:text-primary text-sm"
@@ -70,11 +95,12 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
           <h1 className="font-display text-[22px] md:text-[24px] font-semibold">{title}</h1>
         </div>
         <ProfileMenu
-          name={user?.name ?? ""}
-          email={user?.email ?? ""}
-          role={user?.role ?? ""}
-          onLogout={() => {
-            actions.logout();
+          name={profile?.name ?? user.email ?? ""}
+          email={profile?.email ?? user.email ?? ""}
+          role={roleLabel}
+          isAdmin={isAdmin}
+          onLogout={async () => {
+            await signOut();
             navigate({ to: "/login" });
           }}
         />
@@ -105,19 +131,61 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
   );
 }
 
+function PendingScreen({
+  status,
+  onSignOut,
+}: {
+  status: "pending" | "rejected";
+  onSignOut: () => Promise<void>;
+}) {
+  const navigate = useNavigate();
+  const rejected = status === "rejected";
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-surface-container border border-outline-variant rounded-lg p-8 text-center space-y-4">
+        <div className="w-16 h-16 mx-auto rounded-full bg-primary-container/20 flex items-center justify-center">
+          <span className={`material-symbols-outlined text-[40px] ${rejected ? "text-error" : "text-primary"}`}>
+            {rejected ? "block" : "hourglass_top"}
+          </span>
+        </div>
+        <h2 className="font-display text-2xl font-bold">
+          {rejected ? "Account rejected" : "Awaiting approval"}
+        </h2>
+        <p className="text-on-surface-variant text-sm">
+          {rejected
+            ? "An admin has rejected your account request. Contact your fleet administrator for details."
+            : "Your account has been created and is waiting for admin approval. You'll get access as soon as an admin approves you."}
+        </p>
+        <button
+          onClick={async () => {
+            await onSignOut();
+            navigate({ to: "/login" });
+          }}
+          className="w-full h-11 bg-primary-container text-on-primary-container font-bold rounded hover:brightness-110"
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ProfileMenu({
   name,
   email,
   role,
+  isAdmin,
   onLogout,
 }: {
   name: string;
   email: string;
   role: string;
+  isAdmin: boolean;
   onLogout: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!open) return;
@@ -130,9 +198,6 @@ function ProfileMenu({
 
   return (
     <div className="flex items-center gap-4" ref={ref}>
-      <button className="text-on-surface-variant hover:text-primary" aria-label="Notifications">
-        <span className="material-symbols-outlined">notifications</span>
-      </button>
       <div className="hidden sm:flex flex-col items-end">
         <span className="text-[13px] font-semibold">{name}</span>
         <span className="text-[10px] uppercase tracking-widest text-on-surface-variant">
@@ -165,9 +230,21 @@ function ProfileMenu({
               </div>
               <div className="flex justify-between">
                 <span className="text-on-surface-variant text-[11px] uppercase tracking-wider">Status</span>
-                <span className="text-green-400 font-semibold">Active</span>
+                <span className="text-green-400 font-semibold">Approved</span>
               </div>
             </div>
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  navigate({ to: "/admin/users" });
+                }}
+                className="w-full text-left px-4 py-3 border-t border-outline-variant text-sm hover:bg-surface-container-high flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">shield_person</span>
+                Manage Users
+              </button>
+            )}
             <button
               onClick={() => {
                 setOpen(false);
@@ -185,11 +262,7 @@ function ProfileMenu({
   );
 }
 
-export function StatusPill({
-  status,
-}: {
-  status: string;
-}) {
+export function StatusPill({ status }: { status: string }) {
   const map: Record<string, string> = {
     Available: "bg-green-500/15 text-green-400 border-green-500/30",
     "On Trip": "bg-secondary-container/20 text-secondary border-secondary/30",
