@@ -68,12 +68,12 @@ export interface Expense {
 }
 
 // ---------- generic helper ----------
-type AnyTable = Parameters<typeof supabase.from>[0];
-function useList<T>(table: AnyTable, key: string, order: string = "created_at") {
+function useList<T>(table: string, key: string, order: string = "created_at") {
   return useQuery({
     queryKey: [key],
     queryFn: async (): Promise<T[]> => {
-      const { data, error } = await supabase.from(table).select("*").order(order, { ascending: false });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase.from as any)(table).select("*").order(order, { ascending: false });
       if (error) throw error;
       return (data ?? []) as T[];
     },
