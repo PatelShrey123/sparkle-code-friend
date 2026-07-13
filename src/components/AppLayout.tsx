@@ -15,6 +15,7 @@ const nav = [
 ];
 
 export function AppLayout({ title, children }: { title: string; children: ReactNode }) {
+  useBindActions();
   const { user, profile, roles, loading, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
