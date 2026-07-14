@@ -10,7 +10,7 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", terms: false });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "dispatcher", terms: false });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -75,7 +75,7 @@ function SignupPage() {
                 email: form.email,
                 password: form.password,
                 options: {
-                  data: { name: form.name },
+                  data: { name: form.name, role: form.role },
                   emailRedirectTo: window.location.origin,
                 },
               });
