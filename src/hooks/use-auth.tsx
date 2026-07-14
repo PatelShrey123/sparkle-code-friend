@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => sub.subscription.unsubscribe();
   }, [qc]);
 
-  const { data: profile = null } = useQuery({
+  const { data: profile = null, isLoading: profileLoading } = useQuery({
     queryKey: ["profile", user?.id],
     enabled: !!user,
     queryFn: async (): Promise<Profile | null> => {
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const { data: roles = [] } = useQuery({
+  const { data: roles = [], isLoading: rolesLoading } = useQuery({
     queryKey: ["roles", user?.id],
     enabled: !!user,
     queryFn: async (): Promise<Role[]> => {
@@ -83,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const canManageTrips = canManageFleet || hasRole("dispatcher");
   const canManageMaintenance = canManageFleet || hasRole("safety_officer");
   const canManageFuel = canManageFleet || hasRole("financial_analyst");
+  const authLoading = loading || (!!user && (profileLoading || rolesLoading));
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -96,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         profile,
         roles,
-        loading,
+        loading: authLoading,
         hasRole,
         canManageFleet,
         canManageDrivers,
