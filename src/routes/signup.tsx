@@ -10,7 +10,7 @@ export const Route = createFileRoute("/signup")({
 
 function SignupPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", terms: false });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "dispatcher", terms: false });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -75,7 +75,7 @@ function SignupPage() {
                 email: form.email,
                 password: form.password,
                 options: {
-                  data: { name: form.name },
+                  data: { name: form.name, role: form.role },
                   emailRedirectTo: window.location.origin,
                 },
               });
@@ -127,6 +127,18 @@ function SignupPage() {
                   {showPassword ? "visibility_off" : "visibility"}
                 </span>
               </button>
+            </Field>
+            <Field label="Requested Role" icon="badge">
+              <select
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                className="input"
+              >
+                <option value="dispatcher">Dispatcher — manage trips, view fleet/drivers</option>
+                <option value="fleet_manager">Fleet Manager — full fleet access</option>
+                <option value="safety_officer">Safety Officer — drivers + maintenance</option>
+                <option value="financial_analyst">Financial Analyst — fuel + expenses</option>
+              </select>
             </Field>
             <label className="flex items-start gap-3 py-2 text-sm text-on-surface-variant">
               <input
