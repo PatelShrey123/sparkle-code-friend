@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, ROLE_LABEL, type Role, type Profile } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/admin/users")({
-  head: () => ({ meta: [{ title: "Manage Users — TransitOps" }] }),
+  head: () => ({ meta: [{ title: "Approval — TransitOps" }] }),
   component: AdminUsersPage,
 });
 
@@ -56,7 +56,7 @@ function AdminUsersPage() {
 
   if (!loading && !isAdmin) {
     return (
-      <AppLayout title="Manage Users">
+      <AppLayout title="Approval">
         <div className="p-8 text-center border border-outline-variant rounded-lg">
           <span className="material-symbols-outlined text-4xl text-error">block</span>
           <p className="mt-2 text-on-surface-variant">Admins only.</p>
@@ -69,14 +69,23 @@ function AdminUsersPage() {
   const others = users.filter((u) => u.status !== "pending");
 
   return (
-    <AppLayout title="Manage Users">
+    <AppLayout title="Approval">
       <div className="space-y-8">
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="material-symbols-outlined text-primary">pending</span>
-            <h2 className="font-display font-semibold text-[18px]">
-              Pending approval ({pending.length})
-            </h2>
+        <section className="bg-surface-container border border-outline-variant rounded-lg p-4 md:p-5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-lg bg-primary-container/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary">verified_user</span>
+              </div>
+              <div>
+                <h2 className="font-display font-semibold text-[20px]">Approval</h2>
+                <p className="text-sm text-on-surface-variant">Accept or reject new account requests.</p>
+              </div>
+            </div>
+            <span className="inline-flex w-fit items-center gap-2 text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded border border-primary/30 bg-primary/10 text-primary">
+              <span className="material-symbols-outlined text-[16px]">pending_actions</span>
+              {pending.length} waiting
+            </span>
           </div>
           {isLoading && <p className="text-on-surface-variant text-sm">Loading...</p>}
           {!isLoading && pending.length === 0 && (
@@ -101,7 +110,7 @@ function AdminUsersPage() {
           <div className="flex items-center gap-2 mb-3">
             <span className="material-symbols-outlined text-secondary">group</span>
             <h2 className="font-display font-semibold text-[18px]">
-              All users ({others.length})
+              User history ({others.length})
             </h2>
           </div>
           <div className="space-y-2">
