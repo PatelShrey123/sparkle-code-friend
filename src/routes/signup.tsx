@@ -128,6 +128,18 @@ function SignupPage() {
                 </span>
               </button>
             </Field>
+            <Field label="Requested Role" icon="badge">
+              <select
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                className="input"
+              >
+                <option value="dispatcher">Dispatcher — manage trips, view fleet/drivers</option>
+                <option value="fleet_manager">Fleet Manager — full fleet access</option>
+                <option value="safety_officer">Safety Officer — drivers + maintenance</option>
+                <option value="financial_analyst">Financial Analyst — fuel + expenses</option>
+              </select>
+            </Field>
             <label className="flex items-start gap-3 py-2 text-sm text-on-surface-variant">
               <input
                 type="checkbox"
