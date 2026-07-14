@@ -1,7 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
+import { ROLE_LABEL, type Role } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Create account — TransitOps" }] }),
@@ -9,11 +10,40 @@ export const Route = createFileRoute("/signup")({
 });
 
 function SignupPage() {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "dispatcher", terms: false });
+  const [form, setForm] = useState({ name: "", email: "", password: "", role: "dispatcher" as Role, terms: false });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-background text-on-surface flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] gradient-glow opacity-30" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] gradient-glow opacity-20" />
+        </div>
+        <main className="relative z-10 w-full max-w-[480px] bg-surface-container border border-outline-variant rounded-lg shadow-2xl p-8 text-center space-y-5">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-container/20">
+            <span className="material-symbols-outlined text-primary text-[40px]">hourglass_top</span>
+          </div>
+          <div>
+            <h1 className="font-display text-[28px] font-bold">Waiting for admin approval</h1>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              Your account request was sent as <span className="font-semibold text-primary">{ROLE_LABEL[form.role]}</span>.
+              An admin must approve it before you can access TransitOps.
+            </p>
+          </div>
+          <Link
+            to="/login"
+            className="inline-flex h-11 w-full items-center justify-center rounded bg-primary-container text-on-primary-container font-bold hover:brightness-110"
+          >
+            Back to sign in
+          </Link>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-on-surface flex items-center justify-center p-4 relative overflow-hidden">
@@ -40,8 +70,7 @@ function SignupPage() {
                   Bootstrap Notice
                 </p>
                 <p className="text-xs text-on-surface-variant">
-                  The <span className="text-primary">first person to sign up</span> automatically
-                  becomes the admin. Everyone else waits for approval.
+                  Every new account waits here until an admin approves or rejects the request.
                 </p>
               </div>
             </div>
@@ -84,7 +113,8 @@ function SignupPage() {
                 setError(err.message);
                 return;
               }
-              navigate({ to: "/dashboard" });
+              await supabase.auth.signOut();
+              setSubmitted(true);
             }}
           >
             <Field label="Full Name" icon="person">
@@ -131,7 +161,7 @@ function SignupPage() {
             <Field label="Requested Role" icon="badge">
               <select
                 value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
                 className="input"
               >
                 <option value="dispatcher">Dispatcher — manage trips, view fleet/drivers</option>
