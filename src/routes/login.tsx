@@ -15,6 +15,42 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [approvalState, setApprovalState] = useState<"pending" | "rejected" | null>(null);
+
+  if (approvalState) {
+    const rejected = approvalState === "rejected";
+    return (
+      <div className="min-h-screen bg-background text-on-surface flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] gradient-glow opacity-30" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] gradient-glow opacity-20" />
+        </div>
+        <main className="relative z-10 w-full max-w-[460px] bg-surface-container border border-outline-variant rounded-lg shadow-2xl p-8 text-center space-y-5">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary-container/20">
+            <span className={`material-symbols-outlined text-[40px] ${rejected ? "text-error" : "text-primary"}`}>
+              {rejected ? "block" : "hourglass_top"}
+            </span>
+          </div>
+          <div>
+            <h1 className="font-display text-[28px] font-bold">
+              {rejected ? "Account rejected" : "Waiting for admin approval"}
+            </h1>
+            <p className="mt-2 text-sm text-on-surface-variant">
+              {rejected
+                ? "An admin rejected this account request. Please contact your fleet administrator."
+                : "Your account exists, but an admin still needs to approve it before you can access TransitOps."}
+            </p>
+          </div>
+          <button
+            onClick={() => setApprovalState(null)}
+            className="inline-flex h-11 w-full items-center justify-center rounded bg-primary-container text-on-primary-container font-bold hover:brightness-110"
+          >
+            Back to sign in
+          </button>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-on-surface flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -41,12 +77,33 @@ function LoginPage() {
               e.preventDefault();
               setError(null);
               setLoading(true);
-              const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-              setLoading(false);
+              const { data, error: err } = await supabase.auth.signInWithPassword({ email, password });
               if (err) {
+                setLoading(false);
                 setError(err.message);
                 return;
               }
+              const userId = data.user?.id;
+              if (userId) {
+                const { data: profile, error: profileError } = await supabase
+                  .from("profiles")
+                  .select("status")
+                  .eq("id", userId)
+                  .maybeSingle();
+                if (profileError) {
+                  await supabase.auth.signOut();
+                  setLoading(false);
+                  setError(profileError.message);
+                  return;
+                }
+                if (profile?.status !== "approved") {
+                  await supabase.auth.signOut();
+                  setLoading(false);
+                  setApprovalState(profile?.status === "rejected" ? "rejected" : "pending");
+                  return;
+                }
+              }
+              setLoading(false);
               navigate({ to: "/dashboard" });
             }}
           >
@@ -115,7 +172,7 @@ function LoginPage() {
 
         <footer className="text-center text-on-surface-variant/60 text-xs">
           <p>© 2026 TransitOps Global Systems.</p>
-          <p className="mt-1 font-mono text-[10px]">First account to sign up becomes the admin.</p>
+          <p className="mt-1 font-mono text-[10px]">New accounts require admin approval.</p>
         </footer>
       </main>
     </div>
