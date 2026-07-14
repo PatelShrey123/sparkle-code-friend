@@ -71,8 +71,8 @@ export function AppLayout({ title, children }: { title: string; children: ReactN
                   : "text-on-surface-variant hover:bg-surface-container border-l-4 border-transparent"
               }`}
             >
-              <span className="material-symbols-outlined">shield_person</span>
-              <span className="font-display text-[15px] font-semibold">Manage Users</span>
+              <span className="material-symbols-outlined">verified_user</span>
+              <span className="font-display text-[15px] font-semibold">Approval</span>
             </Link>
           )}
         </nav>
@@ -241,8 +241,8 @@ function ProfileMenu({
                 }}
                 className="w-full text-left px-4 py-3 border-t border-outline-variant text-sm hover:bg-surface-container-high flex items-center gap-2"
               >
-                <span className="material-symbols-outlined text-[18px]">shield_person</span>
-                Manage Users
+                <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                Approval
               </button>
             )}
             <button
