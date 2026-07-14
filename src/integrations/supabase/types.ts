@@ -319,13 +319,6 @@ export type Database = {
         Returns: boolean
       }
       is_approved: { Args: { _user_id: string }; Returns: boolean }
-      set_account_status: {
-        Args: {
-          _status: Database["public"]["Enums"]["account_status"]
-          _user_id: string
-        }
-        Returns: undefined
-      }
     }
     Enums: {
       account_status: "pending" | "approved" | "rejected"
